@@ -15,6 +15,11 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
     font-family: sans-serif;
     background-color: #D9E6F6;
+    background-image: url('https://i2.wp.com/nerdizmo.uai.com.br/wp-content/uploads/sites/29/2021/05/wallpapers-do-star-wars-01-scaled.jpg?resize=950%2C534&ssl=1');
+    height: 100%; 
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;    
   }
 
   #__next {
