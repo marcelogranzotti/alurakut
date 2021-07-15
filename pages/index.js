@@ -86,6 +86,23 @@ export default function Home() {
   );  // State Hooks
 
   const pessoasFavoritas = arrayPessoasFavoritas(['eusener', {title: 'juunegreiros', url: 'https://www.instagram.com/juu_negreiros/'}, {title: 'omariosouto', url: 'https://www.instagram.com/omariosouto/'}, {title: 'peas', url: 'https://www.instagram.com/paulo_hipster'}]);
+
+  // Pegar o array de dados do github
+  const [seguidores, setSeguidores] = React.useState([]);
+
+  React.useEffect(function() {
+    fetch(`https://api.github.com/users/${usuarioAleatorio}/followers`)
+    .then(function (respostaDoServidor) { 
+      return respostaDoServidor.json();
+    })
+    .then(function(respostaCompleta) {
+      setSeguidores(respostaCompleta);
+    });
+  }, []);
+  
+
+
+
   return (
     <>
       <AlurakutMenu githubUser={usuarioAleatorio}/>
@@ -132,6 +149,9 @@ export default function Home() {
           </Box>
         </div>
         <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+          <ProfileRelationsBoxWrapper>
+            <ProfileRelationsList header='Seguidores' list={seguidores} />
+          </ProfileRelationsBoxWrapper>
           <ProfileRelationsBoxWrapper>
             <ProfileRelationsList header='Comunidades' list={comunidades} />
           </ProfileRelationsBoxWrapper> 
