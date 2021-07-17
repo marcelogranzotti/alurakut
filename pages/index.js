@@ -29,8 +29,8 @@ function ProfileRelationsList(propriedades){
         {propriedades.list.slice(0, 6).map((itemAtual) => {
           return(
             <li key={itemAtual.id}>
-              <a target="blank" href={itemAtual.url ? itemAtual.url : `#`} key={itemAtual.title}>
-                <img src={itemAtual.image}/>
+              <a target="blank" href={itemAtual.linkUrl ? itemAtual.linkUrl : `#`} key={itemAtual.title}>
+                <img src={itemAtual.imageUrl}/>
                 <span>{itemAtual.title}</span>
               </a>
             </li>
@@ -74,16 +74,7 @@ function arrayComunidades(comunidades) {
 export default function Home() {
   const usuarioAleatorio = 'marcelogranzotti';
 
-  const [comunidades, setComunidades] = React.useState(
-    arrayComunidades([
-      {title: 'Eu odeio acordar cedo', image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg', url: 'https://www.orkut.br.com/MainCommunity?cmm=10000'},
-      {title: 'Pink Floyd', image: 'https://images-na.ssl-images-amazon.com/images/I/81fVUZiXFJL._AC_SL1500_.jpg', url: 'https://www.youtube.com/channel/UCY2qt3dw2TQJxvBrDiYGHdQ'},
-      {title: 'Nerdologia', url: 'https://www.youtube.com/user/nerdologia'}, 
-      {title: 'SpaceToday', image: 'https://spacetoday.com.br/wp-content/uploads/2021/03/logo04-1022x470-BRANCA.png', 'url': 'https://www.youtube.com/channel/UC_Fk7hHbl7vv_7K8tYqJd5A'},
-      {title: 'Alura', image: 'https://www.alura.com.br/assets/img/home/alura-logo.1616501197.svg', url: 'https://www.youtube.com/user/aluracursosonline'},
-      {title: 'Star Wars', image: 'https://logodownload.org/wp-content/uploads/2015/12/star-wars-logo-0-1536x1536.png', url: 'https://www.starwars.com/'}
-    ])
-  );  // State Hooks
+  const [comunidades, setComunidades] = React.useState([]);  // State Hooks
 
   const pessoasFavoritas = arrayPessoasFavoritas(['eusener', {title: 'juunegreiros', url: 'https://www.instagram.com/juu_negreiros/'}, {title: 'omariosouto', url: 'https://www.instagram.com/omariosouto/'}, {title: 'peas', url: 'https://www.instagram.com/paulo_hipster'}]);
 
@@ -91,6 +82,7 @@ export default function Home() {
   const [seguidores, setSeguidores] = React.useState([]);
 
   React.useEffect(function() {
+    // GET
     fetch(`https://api.github.com/users/${usuarioAleatorio}/followers`)
     .then(function (respostaDoServidor) { 
       return respostaDoServidor.json();
@@ -98,10 +90,37 @@ export default function Home() {
     .then(function(respostaCompleta) {
       setSeguidores(respostaCompleta);
     });
+
+    // API GraphQL
+    fetch('https://graphql.datocms.com', {
+      method: 'POST',
+      headers: {
+        'Authorization': '544c20bb4b7536e0334cd28b20952f',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        'query' : 
+          `query {
+            allCommunities {
+              id
+              title
+              creatorSlug
+              imageUrl
+              linkUrl
+            }
+          }`
+      })
+    })
+    .then((response) => response.json())  // Resposta imediata
+    .then((respostaCompleta) => {
+      console.log('objetoDATO',respostaCompleta);
+      const comunidadesVindasDoDato = respostaCompleta.data.allCommunities;
+      setComunidades(comunidadesVindasDoDato);
+    })
+
+
   }, []);
-  
-
-
 
   return (
     <>
@@ -121,12 +140,26 @@ export default function Home() {
               e.preventDefault();
               const dadosDoForm = new FormData(e.target);
               const comunidade = {
-                id: new Date().toISOString(),
                 title: dadosDoForm.get('title'),
-                image: (dadosDoForm.get('image') ? dadosDoForm.get('image') : `https://picsum.photos/300/300?${Math.random().toString}`)
+                imageUrl: (dadosDoForm.get('image') ? dadosDoForm.get('image') : `https://picsum.photos/300/300?${Math.random().toString}`),
+                linkUrl: `#`,
+                creatorSlug: usuarioAleatorio
               };
-              //const comunidadesAtualizadas = [...comunidades, 'Alura Stars']
-              setComunidades([...comunidades, comunidade]);
+
+              fetch('/api/comunidades', {
+                method: 'POST',
+                headers: {
+                  'Content-Type' : 'application/json'
+                },
+                body: JSON.stringify(comunidade)
+              })
+              .then((response) => {
+                const dados = response.json();
+                console.log(dados);
+                const comunidadesAtualizadas = [...comunidades, comunidade];
+                setComunidades(comunidadesAtualizadas);
+            })
+              
             }}>
               <div>
                 <input 
